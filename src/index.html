@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Server</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #09090b;
+            --panel: rgba(24, 24, 27, 0.75);
+            --panel-border: rgba(63, 63, 70, 0.4);
+            --panel-hover: rgba(39, 39, 42, 0.9);
+            --text: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.15);
+            --accent: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.15);
+            --danger: #ef4444;
+            --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.03) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* Layout Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: var(--panel);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Header Style */
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px var(--primary-glow);
+        }
+
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .logo-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            background: linear-gradient(90deg, #ffffff, #e4e4e7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-title p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Stats Badge */
+        .stats-badges {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .stat-badge {
+            background: rgba(39, 39, 42, 0.6);
+            border: 1px solid var(--panel-border);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .stat-badge span.value {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Breadcrumbs navigation */
+        .breadcrumbs-container {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            background: rgba(9, 9, 11, 0.4);
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .breadcrumb-item {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .breadcrumb-item:hover {
+            color: var(--primary);
+        }
+
+        .breadcrumb-item.active {
+            color: var(--text);
+            cursor: default;
+        }
+
+        .breadcrumb-separator {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 0.8rem;
+        }
+
+        /* Search & Actions Bar */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+            max-width: 500px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(24, 24, 27, 0.6);
+            border: 1px solid var(--panel-border);
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border-radius: var(--radius-md);
+            color: var(--text);
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+            background: rgba(24, 24, 27, 0.9);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .view-controls {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(24, 24, 27, 0.6);
+            border: 1px solid var(--panel-border);
+            padding: 0.25rem;
+            border-radius: var(--radius-md);
+        }
+
+        .view-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .view-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .view-btn:hover:not(.active) {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .view-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* File Explorer Area */
+        .explorer-card {
+            min-height: 400px;
+            padding: 1.5rem;
+        }
+
+        /* File List Table (Default View) */
+        .files-table-container {
+            overflow-x: auto;
+        }
+
+        .files-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .files-table th {
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--panel-border);
+            cursor: pointer;
+            user-select: none;
+            transition: var(--transition);
+        }
+
+        .files-table th:hover {
+            color: var(--text);
+        }
+
+        .files-table th svg {
+            width: 12px;
+            height: 12px;
+            margin-left: 0.25rem;
+            vertical-align: middle;
+        }
+
+        .files-table tr.file-row {
+            border-bottom: 1px solid rgba(63, 63, 70, 0.2);
+            transition: var(--transition);
+        }
+
+        .files-table tr.file-row:hover {
+            background: var(--panel-hover);
+        }
+
+        .files-table td {
+            padding: 1rem;
+            vertical-align: middle;
+            font-size: 0.95rem;
+        }
+
+        .file-name-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+        }
+
+        .file-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .file-icon.folder {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .file-icon.file {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .file-icon.image {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent);
+        }
+
+        .file-icon.code {
+            background: rgba(236, 72, 153, 0.1);
+            color: #ec4899;
+        }
+
+        .file-icon.video {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .file-icon.audio {
+            background: rgba(6, 182, 212, 0.1);
+            color: #06b6d4;
+        }
+
+        .file-icon.archive {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .file-icon.doc {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .file-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .file-size-cell {
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+
+        .file-date-cell {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .file-actions-cell {
+            text-align: right;
+        }
+
+        /* Action Buttons */
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .btn-sm {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+
+        .btn-icon-only {
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+        }
+
+        /* Grid View Layout */
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .grid-card {
+            background: rgba(24, 24, 27, 0.4);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grid-card:hover {
+            background: var(--panel-hover);
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--primary-glow);
+        }
+
+        .grid-card .file-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+        }
+
+        .grid-card .file-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .grid-card-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text);
+        }
+
+        .grid-card-info {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-bottom: 1rem;
+            font-family: var(--font-mono);
+        }
+
+        .grid-card-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            stroke: var(--text-muted);
+            opacity: 0.3;
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state h3 {
+            color: var(--text);
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Preview Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 1.5rem;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-container {
+            width: 100%;
+            max-width: 800px;
+            max-height: 85vh;
+            background: #18181b;
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-close svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(9, 9, 11, 0.2);
+            min-height: 200px;
+        }
+
+        .preview-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 60vh;
+            border-radius: var(--radius-sm);
+            object-fit: contain;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .preview-media {
+            width: 100%;
+            max-height: 60vh;
+            outline: none;
+            border-radius: var(--radius-sm);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .preview-text {
+            width: 100%;
+            background: #09090b;
+            border: 1px solid var(--panel-border);
+            padding: 1.25rem;
+            border-radius: var(--radius-sm);
+            color: #e4e4e7;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 55vh;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .preview-generic {
+            text-align: center;
+            padding: 3rem 1.5rem;
+        }
+
+        .preview-generic svg {
+            width: 80px;
+            height: 80px;
+            color: var(--text-muted);
+            opacity: 0.3;
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-generic p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .modal-footer {
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            background: #18181b;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 2000;
+        }
+
+        .toast {
+            background: rgba(24, 24, 27, 0.9);
+            border: 1px solid var(--panel-border);
+            backdrop-filter: blur(8px);
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success svg {
+            color: var(--accent);
+        }
+
+        .toast.error svg {
+            color: var(--danger);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .container {
+                padding: 1rem 1rem;
+            }
+            header {
+                padding: 1.25rem;
+            }
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .stats-badges {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-container {
+                max-width: 100%;
+            }
+            .files-table th:nth-child(3),
+            .files-table td:nth-child(3),
+            .files-table th:nth-child(4),
+            .files-table td:nth-child(4) {
+                display: none; /* Hide date on small screens */
+            }
+            .modal-container {
+                max-height: 90vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+
+        <!-- Toolbar -->
+        <div class="toolbar animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="search-container">
+                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" id="search-input" class="search-input" placeholder="Search files & folders in current directory...">
+            </div>
+            
+            <div class="view-controls">
+                <button id="view-list-btn" class="view-btn active" title="List View">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                <button id="view-grid-btn" class="view-btn" title="Grid View">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Explorer Content -->
+        <main class="glass-panel explorer-card animate-fade-in" style="animation-delay: 0.2s;">
+            <!-- File list container -->
+            <div id="explorer-view">
+                <!-- Content injected dynamically -->
+                <div style="display: flex; justify-content: center; align-items: center; height: 300px;">
+                    <div style="text-align: center; color: var(--text-muted);">Loading files...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal-overlay" id="preview-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">
+                    <div class="file-icon file" id="modal-icon"></div>
+                    <span id="modal-filename">filename.txt</span>
+                </div>
+                <button class="modal-close" id="modal-close-btn">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Preview content dynamically loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="modal-close-action">Close</button>
+                <a class="btn btn-primary" id="modal-download-action" href="#" download>Download</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Templates & SVGs -->
+    <div style="display: none;">
+        <!-- SVGs to be reused in JavaScript -->
+        <div id="svg-folder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+        </div>
+        <div id="svg-file">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                <polyline points="13 2 13 9 20 9"></polyline>
+            </svg>
+        </div>
+        <div id="svg-image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+        </div>
+        <div id="svg-code">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+        </div>
+        <div id="svg-video">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+            </svg>
+        </div>
+        <div id="svg-audio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18V5l12-2v13"></path>
+                <circle cx="6" cy="18" r="3"></circle>
+                <circle cx="18" cy="16" r="3"></circle>
+            </svg>
+        </div>
+        <div id="svg-archive">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                <rect x="1" y="3" width="22" height="5"></rect>
+                <line x1="10" y1="12" x2="14" y2="12"></line>
+            </svg>
+        </div>
+        <div id="svg-doc">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+        </div>
+        <div id="svg-download">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+        </div>
+        <div id="svg-external">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+        </div>
+        <div id="svg-arrow-up">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"></line>
+                <polyline points="5 12 12 5 19 12"></polyline>
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        // App State
+        let currentPath = '';
+        let filesData = [];
+        let viewMode = 'list'; // 'list' or 'grid'
+        let currentSort = null; // null means use backend default sorting order
+
+        // DOM Elements
+        const explorerView = document.getElementById('explorer-view');
+
+        const searchInput = document.getElementById('search-input');
+        const viewListBtn = document.getElementById('view-list-btn');
+        const viewGridBtn = document.getElementById('view-grid-btn');
+
+
+        // Modal Elements
+        const previewModal = document.getElementById('preview-modal');
+        const modalFilename = document.getElementById('modal-filename');
+        const modalIcon = document.getElementById('modal-icon');
+        const modalBody = document.getElementById('modal-body');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalCloseAction = document.getElementById('modal-close-action');
+        const modalDownloadAction = document.getElementById('modal-download-action');
+
+        // Initial setup
+        window.addEventListener('DOMContentLoaded', () => {
+            // Read initial path from URL query params
+            const params = new URLSearchParams(window.location.search);
+            currentPath = params.get('path') || '';
+            
+            // View Mode preference
+            const savedViewMode = localStorage.getItem('viewMode');
+            if (savedViewMode) {
+                viewMode = savedViewMode;
+                updateViewModeButtons();
+            }
+
+            fetchFiles();
+
+            // Event Listeners
+            searchInput.addEventListener('input', renderExplorer);
+            
+            viewListBtn.addEventListener('click', () => {
+                viewMode = 'list';
+                localStorage.setItem('viewMode', 'list');
+                updateViewModeButtons();
+                renderExplorer();
+            });
+
+            viewGridBtn.addEventListener('click', () => {
+                viewMode = 'grid';
+                localStorage.setItem('viewMode', 'grid');
+                updateViewModeButtons();
+                renderExplorer();
+            });
+
+            modalCloseBtn.addEventListener('click', closeModal);
+            modalCloseAction.addEventListener('click', closeModal);
+            previewModal.addEventListener('click', (e) => {
+                if (e.target === previewModal) closeModal();
+            });
+
+            // Handle browser back/forward buttons
+            window.addEventListener('popstate', (e) => {
+                const params = new URLSearchParams(window.location.search);
+                currentPath = params.get('path') || '';
+                fetchFiles();
+            });
+        });
+
+        // Helper to update active view mode buttons styling
+        function updateViewModeButtons() {
+            if (viewMode === 'list') {
+                viewListBtn.classList.add('active');
+                viewGridBtn.classList.remove('active');
+            } else {
+                viewGridBtn.classList.add('active');
+                viewListBtn.classList.remove('active');
+            }
+        }
+
+        // Fetch files from the API
+        async function fetchFiles() {
+            try {
+                explorerView.innerHTML = `
+                    <div style="display: flex; justify-content: center; align-items: center; height: 300px;">
+                        <div style="text-align: center; color: var(--text-muted);">Loading files...</div>
+                    </div>
+                `;
+                
+                const url = `/api/files?path=${encodeURIComponent(currentPath)}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load directory. Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                filesData = data.entries;
+
+
+
+                renderExplorer();
+            } catch (err) {
+                console.error(err);
+                showToast(`Error: ${err.message}`, 'error');
+                explorerView.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <h3>Failed to Load Directory</h3>
+                        <p>${err.message}</p>
+                        <button class="btn btn-primary" onclick="currentPath = ''; navigateTo('');" style="margin-top: 1rem;">Back to Root</button>
+                    </div>
+                `;
+            }
+        }
+
+
+
+        // Navigate to relative path
+        function navigateTo(path) {
+            currentPath = path;
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?path=${encodeURIComponent(path)}`;
+            window.history.pushState({ path: path }, '', newUrl);
+            searchInput.value = ''; // clear search when navigating
+            fetchFiles();
+        }
+
+        // File type helper
+        function getFileTypeInfo(entry) {
+            if (entry.is_dir) {
+                return { type: 'folder', iconHtml: document.getElementById('svg-folder').innerHTML };
+            }
+            
+            const ext = entry.name.split('.').pop().toLowerCase();
+            const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico'];
+            const codeExts = ['rs', 'js', 'ts', 'html', 'css', 'json', 'py', 'sh', 'md', 'toml', 'yaml', 'yml', 'c', 'cpp', 'h', 'go', 'java', 'xml'];
+            const videoExts = ['mp4', 'mkv', 'avi', 'mov', 'webm'];
+            const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac'];
+            const archiveExts = ['zip', 'tar', 'gz', 'rar', '7z', 'bz2', 'xz'];
+            const docExts = ['pdf', 'txt', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv'];
+
+            if (imageExts.includes(ext)) {
+                return { type: 'image', iconHtml: document.getElementById('svg-image').innerHTML };
+            } else if (codeExts.includes(ext)) {
+                return { type: 'code', iconHtml: document.getElementById('svg-code').innerHTML };
+            } else if (videoExts.includes(ext)) {
+                return { type: 'video', iconHtml: document.getElementById('svg-video').innerHTML };
+            } else if (audioExts.includes(ext)) {
+                return { type: 'audio', iconHtml: document.getElementById('svg-audio').innerHTML };
+            } else if (archiveExts.includes(ext)) {
+                return { type: 'archive', iconHtml: document.getElementById('svg-archive').innerHTML };
+            } else if (docExts.includes(ext)) {
+                return { type: 'doc', iconHtml: document.getElementById('svg-doc').innerHTML };
+            } else {
+                return { type: 'file', iconHtml: document.getElementById('svg-file').innerHTML };
+            }
+        }
+
+        // Format size
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        // Format timestamp
+        function formatDate(epochSeconds) {
+            if (!epochSeconds) return '—';
+            const date = new Date(epochSeconds * 1000);
+            return date.toLocaleDateString(undefined, { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Get sorted and filtered entries
+        function getFilteredEntries() {
+            const query = searchInput.value.toLowerCase().trim();
+            let filtered = filesData.filter(entry => entry.name.toLowerCase().includes(query));
+
+            // Sort client-side only if currentSort is explicitly set by clicking a column
+            if (currentSort) {
+                filtered.sort((a, b) => {
+                    // Folders always go first
+                    if (a.is_dir && !b.is_dir) return -1;
+                    if (!a.is_dir && b.is_dir) return 1;
+
+                    let valA = a[currentSort.column];
+                    let valB = b[currentSort.column];
+
+                    if (currentSort.column === 'name') {
+                        valA = valA ? valA.toLowerCase() : '';
+                        valB = valB ? valB.toLowerCase() : '';
+                    }
+
+                    if (valA < valB) return currentSort.asc ? -1 : 1;
+                    if (valA > valB) return currentSort.asc ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            return filtered;
+        }
+
+        // Set Sorting Column
+        function setSort(col) {
+            if (currentSort && currentSort.column === col) {
+                currentSort.asc = !currentSort.asc;
+            } else {
+                currentSort = { column: col, asc: true };
+            }
+            renderExplorer();
+        }
+
+        // Main render function
+        function renderExplorer() {
+            const entries = getFilteredEntries();
+
+            if (entries.length === 0) {
+                explorerView.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3>No Files Found</h3>
+                        <p>No matching files or folders in this directory.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (viewMode === 'list') {
+                renderListView(entries);
+            } else {
+                renderGridView(entries);
+            }
+        }
+
+        // Render List View
+        function renderListView(entries) {
+            const sortIcon = (col) => {
+                if (!currentSort || currentSort.column !== col) return '';
+                return currentSort.asc ? ' ▲' : ' ▼';
+            };
+
+            let html = `
+                <div class="files-table-container">
+                    <table class="files-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40%;" onclick="setSort('name')">Name${sortIcon('name')}</th>
+                                <th style="width: 12%;" onclick="setSort('size')">Size${sortIcon('size')}</th>
+                                <th style="width: 20%;" onclick="setSort('created')">Date Created${sortIcon('created')}</th>
+                                <th style="width: 20%;" onclick="setSort('modified')">Date Modified${sortIcon('modified')}</th>
+                                <th style="width: 8%; text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            // If we're not at root, show standard ".." row to go up
+            if (currentPath !== '') {
+                const parentPath = currentPath.split('/').slice(0, -1).join('/');
+                html += `
+                    <tr class="file-row" onclick="navigateTo('${parentPath}')" style="cursor: pointer;">
+                        <td>
+                            <div class="file-name-cell">
+                                <div class="file-icon folder">
+                                    ${document.getElementById('svg-arrow-up').innerHTML}
+                                </div>
+                                <span>..</span>
+                            </div>
+                        </td>
+                        <td class="file-size-cell">—</td>
+                        <td class="file-date-cell">—</td>
+                        <td class="file-date-cell">—</td>
+                        <td></td>
+                    </tr>
+                `;
+            }
+
+            entries.forEach(entry => {
+                const typeInfo = getFileTypeInfo(entry);
+                const sizeStr = entry.is_dir ? '—' : formatBytes(entry.size);
+                const createdStr = formatDate(entry.created);
+                const modifiedStr = formatDate(entry.modified);
+                const clickAction = entry.is_dir 
+                    ? `navigateTo('${entry.path}')` 
+                    : `openPreview('${entry.name}', '${entry.path}', '${typeInfo.type}', ${entry.size})`;
+
+                const downloadUrl = `/api/download?path=${encodeURIComponent(entry.path)}`;
+
+                html += `
+                    <tr class="file-row" onclick="${clickAction}" style="cursor: pointer;">
+                        <td>
+                            <div class="file-name-cell">
+                                <div class="file-icon ${typeInfo.type}">
+                                    ${typeInfo.iconHtml}
+                                </div>
+                                <span title="${entry.name}">${entry.name}</span>
+                            </div>
+                        </td>
+                        <td class="file-size-cell">${sizeStr}</td>
+                        <td class="file-date-cell">${createdStr}</td>
+                        <td class="file-date-cell">${modifiedStr}</td>
+                        <td class="file-actions-cell" onclick="event.stopPropagation();">
+                            ${entry.is_dir ? '' : `
+                                <a href="${downloadUrl}" class="btn btn-sm btn-icon-only" title="Download file" download>
+                                    ${document.getElementById('svg-download').innerHTML}
+                                </a>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            explorerView.innerHTML = html;
+        }
+
+        // Render Grid View
+        function renderGridView(entries) {
+            let html = '<div class="files-grid">';
+
+            // Show go up card if not root
+            if (currentPath !== '') {
+                const parentPath = currentPath.split('/').slice(0, -1).join('/');
+                html += `
+                    <div class="grid-card" onclick="navigateTo('${parentPath}')">
+                        <div class="file-icon folder">
+                            ${document.getElementById('svg-arrow-up').innerHTML}
+                        </div>
+                        <div class="grid-card-name">..</div>
+                        <div class="grid-card-info">Go Up</div>
+                    </div>
+                `;
+            }
+
+            entries.forEach(entry => {
+                const typeInfo = getFileTypeInfo(entry);
+                const sizeStr = entry.is_dir ? 'Folder' : formatBytes(entry.size);
+                const clickAction = entry.is_dir 
+                    ? `navigateTo('${entry.path}')` 
+                    : `openPreview('${entry.name}', '${entry.path}', '${typeInfo.type}', ${entry.size})`;
+
+                const downloadUrl = `/api/download?path=${encodeURIComponent(entry.path)}`;
+
+                html += `
+                    <div class="grid-card" onclick="${clickAction}">
+                        <div class="file-icon ${typeInfo.type}">
+                            ${typeInfo.iconHtml}
+                        </div>
+                        <div class="grid-card-name" title="${entry.name}">${entry.name}</div>
+                        <div class="grid-card-info">${sizeStr}</div>
+                        <div class="grid-card-actions" onclick="event.stopPropagation();">
+                            ${entry.is_dir ? '' : `
+                                <a href="${downloadUrl}" class="btn btn-sm" download>
+                                    ${document.getElementById('svg-download').innerHTML} Download
+                                </a>
+                            `}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            explorerView.innerHTML = html;
+        }
+
+        // Open Preview Modal
+        async function openPreview(name, path, type, size) {
+            modalFilename.textContent = name;
+            modalIcon.className = `file-icon ${type}`;
+            modalIcon.innerHTML = getFileTypeInfo({ is_dir: false, name }).iconHtml;
+            
+            const downloadUrl = `/api/download?path=${encodeURIComponent(path)}`;
+            modalDownloadAction.href = downloadUrl;
+            
+            modalBody.innerHTML = `
+                <div style="display: flex; justify-content: center; align-items: center; height: 150px; width: 100%;">
+                    <div style="color: var(--text-muted);">Loading preview...</div>
+                </div>
+            `;
+            
+            previewModal.classList.add('active');
+
+            try {
+                if (type === 'image') {
+                    modalBody.innerHTML = `<img src="${downloadUrl}" class="preview-img" alt="${name}">`;
+                } else if (type === 'video') {
+                    modalBody.innerHTML = `
+                        <video controls class="preview-media">
+                            <source src="${downloadUrl}" type="">
+                            Your browser does not support the video tag.
+                        </video>
+                    `;
+                } else if (type === 'audio') {
+                    modalBody.innerHTML = `
+                        <div class="preview-content">
+                            <div class="file-icon audio" style="width: 80px; height: 80px; margin-bottom: 2rem; border-radius: 50%;">
+                                ${document.getElementById('svg-audio').innerHTML}
+                            </div>
+                            <audio controls class="preview-media" style="max-width: 400px;">
+                                <source src="${downloadUrl}" type="">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                    `;
+                } else if (type === 'code' || (type === 'doc' && name.endsWith('.txt'))) {
+                    // Fetch text content
+                    // Don't fetch if file is too big
+                    if (size > 1024 * 1024 * 5) { // 5MB limit
+                        renderGenericPreview(name, downloadUrl, 'File is too large to preview (> 5MB).');
+                        return;
+                    }
+
+                    const response = await fetch(downloadUrl);
+                    if (!response.ok) throw new Error('Could not load file contents');
+                    const text = await response.text();
+                    
+                    // Simple escape
+                    const escapedText = text
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;");
+
+                    modalBody.innerHTML = `<pre class="preview-text"><code>${escapedText}</code></pre>`;
+                } else {
+                    renderGenericPreview(name, downloadUrl);
+                }
+            } catch (err) {
+                console.error(err);
+                renderGenericPreview(name, downloadUrl, `Could not load preview: ${err.message}`);
+            }
+        }
+
+        function renderGenericPreview(name, downloadUrl, errorMsg = '') {
+            const ext = name.split('.').pop().toUpperCase();
+            modalBody.innerHTML = `
+                <div class="preview-generic">
+                    <div class="file-icon file" style="width: 80px; height: 80px; margin: 0 auto 1.5rem auto;">
+                        ${document.getElementById('svg-file').innerHTML}
+                    </div>
+                    <p style="font-weight: 500; font-size: 1.1rem; margin-bottom: 0.25rem;">${name}</p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">${ext} File</p>
+                    ${errorMsg ? `<p style="color: var(--danger); font-size: 0.9rem; margin-bottom: 1.5rem;">${errorMsg}</p>` : `<p style="margin-bottom: 1.5rem;">Preview not available for this file type.</p>`}
+                </div>
+            `;
+        }
+
+        // Close Preview Modal
+        function closeModal() {
+            // Stop media if playing
+            const video = modalBody.querySelector('video');
+            const audio = modalBody.querySelector('audio');
+            if (video) video.pause();
+            if (audio) audio.pause();
+
+            previewModal.classList.remove('active');
+            modalBody.innerHTML = '';
+        }
+
+        // Show Toast Notifications
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const iconHtml = type === 'success' 
+                ? `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+                : `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+
+            toast.innerHTML = `
+                ${iconHtml}
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // Remove after duration
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
