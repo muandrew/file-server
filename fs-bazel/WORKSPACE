@@ -1,0 +1,7 @@
+load("@rules_android//rules:rules.bzl", "android_sdk_repository")
+
+android_sdk_repository(
+    name = "androidsdk",
+    api_level = 34,
+    build_tools_version = "34.0.0",
+)

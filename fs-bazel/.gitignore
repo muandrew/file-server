@@ -1,0 +1,29 @@
+# Bazel outputs and symlinks
+bazel-*
+.bazel_cache/
+.bzlmod/
+
+# IDE files
+.idea/
+*.iml
+.ijwb/
+.bsp/
+.vscode/
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.lsdproject
+.Trashes
+
+# Android build outputs & local properties
+*.apk
+*.ap_
+*.dex
+*.class
+*.aar
+local.properties
+
+# Build logs & temp files
+*.log
+scratch/

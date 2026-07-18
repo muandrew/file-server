@@ -1,0 +1,25 @@
+load("@rules_android//rules:rules.bzl", "android_binary")
+load("@rules_kotlin//kotlin:android.bzl", "kt_android_library")
+
+kt_android_library(
+    name = "android_lib",
+    srcs = ["src/main/kotlin/com/example/android/MainActivity.kt"],
+    custom_package = "com.example.android",
+    manifest = "AndroidManifest.xml",
+    resource_files = glob(["src/main/res/**"]),
+    visibility = ["//visibility:private"],
+)
+
+android_binary(
+    name = "app",
+    custom_package = "com.example.android",
+    manifest = "AndroidManifest.xml",
+    manifest_values = {
+        "minSdkVersion": "21",
+        "targetSdkVersion": "34",
+        "versionCode": "1",
+        "versionName": "1.0",
+    },
+    visibility = ["//visibility:public"],
+    deps = [":android_lib"],
+)

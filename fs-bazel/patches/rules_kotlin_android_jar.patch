@@ -1,0 +1,10 @@
+--- a/third_party/BUILD.bazel
++++ b/third_party/BUILD.bazel
+@@ -30,5 +30,5 @@
+ java_import(
+     name = "android_sdk",
+-    jars = ["@bazel_tools//tools/android:android_jar"],
++    jars = ["@@+_repo_rules+androidsdk//:platforms/android-34/android.jar"],
+     neverlink = True,
+     visibility = ["//visibility:public"],
+ )
