@@ -1,7 +1,3 @@
-# file-server
-
-This is really just a test repository do not use this for anything serious.
-
 # 🌐 Web File Hub (Rust File Server)
 
 A modern, high-performance, and secure local file server written in Rust. It serves a stunning web-based dashboard allowing users to explore the contents of the directory the executable is running in, preview files (images, audio, video, text/code), and download them instantly.
