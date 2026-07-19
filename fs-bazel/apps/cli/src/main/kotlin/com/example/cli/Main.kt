@@ -1,3 +1,4 @@
+@file:JvmName("Main")
 package com.example.cli
 
 fun main(args: Array<String>) {

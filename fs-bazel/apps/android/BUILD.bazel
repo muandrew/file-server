@@ -1,6 +1,8 @@
 load("@rules_android//rules:rules.bzl", "android_binary")
 load("@rules_kotlin//kotlin:android.bzl", "kt_android_library")
 
+# gazelle:kotlin disabled
+
 kt_android_library(
     name = "android_lib",
     srcs = ["src/main/kotlin/com/example/android/MainActivity.kt"],

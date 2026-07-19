@@ -1,14 +1,7 @@
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary", "kt_jvm_library")
+# gazelle:kotlin disabled
 
-kt_jvm_library(
-    name = "cli_lib",
-    srcs = ["src/main/kotlin/com/example/cli/Main.kt"],
-    visibility = ["//visibility:public"],
-)
-
-kt_jvm_binary(
+alias(
     name = "cli",
-    main_class = "com.example.cli.MainKt",
+    actual = "//apps/cli/src/main/kotlin/com/example/cli:main_bin",
     visibility = ["//visibility:public"],
-    runtime_deps = [":cli_lib"],
 )

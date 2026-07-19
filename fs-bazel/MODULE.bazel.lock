@@ -12,6 +12,8 @@
     "https://bcr.bazel.build/modules/abseil-cpp/20240116.1/source.json": "9be551b8d4e3ef76875c0d744b5d6a504a27e3ae67bc6b28f46415fd2d2957da",
     "https://bcr.bazel.build/modules/abseil-py/2.1.0/MODULE.bazel": "5ebe5bf853769c65707e5c28f216798f7a4b1042015e6a36e6d03094d94bec8a",
     "https://bcr.bazel.build/modules/abseil-py/2.1.0/source.json": "0e8fc4f088ce07099c1cd6594c20c7ddbb48b4b3c0849b7d94ba94be88ff042b",
+    "https://bcr.bazel.build/modules/aspect_gazelle_prebuilt/0.0.23/MODULE.bazel": "3b841822eb21da8c346ec36bacd1edcc7b446cb16361aa869da5db6027a4c6db",
+    "https://bcr.bazel.build/modules/aspect_gazelle_prebuilt/0.0.23/source.json": "ac2b2802808c266cd03bfafdf2627e9a6fa09df8648138699abf4d4c3afe9cff",
     "https://bcr.bazel.build/modules/bazel_features/1.1.0/MODULE.bazel": "cfd42ff3b815a5f39554d97182657f8c4b9719568eb7fded2b9135f084bf760b",
     "https://bcr.bazel.build/modules/bazel_features/1.1.1/MODULE.bazel": "27b8c79ef57efe08efccbd9dd6ef70d61b4798320b8d3c134fd571f78963dbcd",
     "https://bcr.bazel.build/modules/bazel_features/1.11.0/MODULE.bazel": "f9382337dd5a474c3b7d334c2f83e50b6eaedc284253334cf823044a26de03e8",
@@ -59,12 +61,13 @@
     "https://bcr.bazel.build/modules/jsoncpp/1.9.5/source.json": "4108ee5085dd2885a341c7fab149429db457b3169b86eb081fa245eadf69169d",
     "https://bcr.bazel.build/modules/libpfm/4.11.0/MODULE.bazel": "45061ff025b301940f1e30d2c16bea596c25b176c8b6b3087e92615adbd52902",
     "https://bcr.bazel.build/modules/platforms/0.0.10/MODULE.bazel": "8cb8efaf200bdeb2150d93e162c40f388529a25852b332cec879373771e48ed5",
-    "https://bcr.bazel.build/modules/platforms/0.0.10/source.json": "f22828ff4cf021a6b577f1bf6341cb9dcd7965092a439f64fc1bb3b7a5ae4bd5",
     "https://bcr.bazel.build/modules/platforms/0.0.4/MODULE.bazel": "9b328e31ee156f53f3c416a64f8491f7eb731742655a47c9eec4703a71644aee",
     "https://bcr.bazel.build/modules/platforms/0.0.5/MODULE.bazel": "5733b54ea419d5eaf7997054bb55f6a1d0b5ff8aedf0176fef9eea44f3acda37",
     "https://bcr.bazel.build/modules/platforms/0.0.6/MODULE.bazel": "ad6eeef431dc52aefd2d77ed20a4b353f8ebf0f4ecdd26a807d2da5aa8cd0615",
     "https://bcr.bazel.build/modules/platforms/0.0.7/MODULE.bazel": "72fd4a0ede9ee5c021f6a8dd92b503e089f46c227ba2813ff183b71616034814",
     "https://bcr.bazel.build/modules/platforms/0.0.8/MODULE.bazel": "9f142c03e348f6d263719f5074b21ef3adf0b139ee4c5133e2aa35664da9eb2d",
+    "https://bcr.bazel.build/modules/platforms/1.0.0/MODULE.bazel": "f05feb42b48f1b3c225e4ccf351f367be0371411a803198ec34a389fb22aa580",
+    "https://bcr.bazel.build/modules/platforms/1.0.0/source.json": "f4ff1fd412e0246fd38c82328eb209130ead81d62dcd5a9e40910f867f733d96",
     "https://bcr.bazel.build/modules/protobuf/21.7/MODULE.bazel": "a5a29bb89544f9b97edce05642fac225a808b5b7be74038ea3640fae2f8e66a7",
     "https://bcr.bazel.build/modules/protobuf/23.1/MODULE.bazel": "88b393b3eb4101d18129e5db51847cd40a5517a53e81216144a8c32dfeeca52a",
     "https://bcr.bazel.build/modules/protobuf/24.4/MODULE.bazel": "7bc7ce5f2abf36b3b7b7c8218d3acdebb9426aeb35c2257c96445756f970eb12",
@@ -181,20 +184,62 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
-    "@@platforms//host:extension.bzl%host_platform": {
+    "@@aspect_gazelle_prebuilt+//:extensions.bzl%prebuilt_extension": {
       "general": {
-        "bzlTransitiveDigest": "xelQcPZH8+tmuOHVjL9vDxMnnQNMlwj0SlvgoqBkm4U=",
-        "usagesDigest": "SeQiIN/f8/Qt9vYQk7qcXp4I4wJeEC0RnQDiaaJ4tb8=",
+        "bzlTransitiveDigest": "gl77aSy1fx7VkYB1wsTYTnKA5JE3JkC2VkIRmHsghMk=",
+        "usagesDigest": "jUCQD1PMPNES8bacdOUPG7pZFwCfv7CbH+gMsjj8EcQ=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
         "generatedRepoSpecs": {
-          "host_platform": {
-            "repoRuleId": "@@platforms//host:extension.bzl%host_platform_repo",
-            "attributes": {}
+          "aspect_gazelle_prebuilt_linux_amd64": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "executable": true,
+              "sha256": "336f566212b2dc74dbe26f456cebbc537610bf64ca6bf56647d83c471f36d151",
+              "urls": [
+                "https://github.com/aspect-build/aspect-gazelle/releases/download/prebuilt-v0.0.23/aspect_gazelle-linux_amd64"
+              ]
+            }
+          },
+          "aspect_gazelle_prebuilt_linux_arm64": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "executable": true,
+              "sha256": "521c3820e7505d37994d22ea13a0c96a791971b9bb161d41e480c5f04679cf2e",
+              "urls": [
+                "https://github.com/aspect-build/aspect-gazelle/releases/download/prebuilt-v0.0.23/aspect_gazelle-linux_arm64"
+              ]
+            }
+          },
+          "aspect_gazelle_prebuilt_darwin_amd64": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "executable": true,
+              "sha256": "d5e82e9a6a1026f3efe753edb63cca531c6dfb323ca2b7d1139c8dd7511ddc4e",
+              "urls": [
+                "https://github.com/aspect-build/aspect-gazelle/releases/download/prebuilt-v0.0.23/aspect_gazelle-darwin_amd64"
+              ]
+            }
+          },
+          "aspect_gazelle_prebuilt_darwin_arm64": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "executable": true,
+              "sha256": "b4299b4c791ffb7ee3f6c21e1394cf93165e102574ee442d49a1fb4e4d8b4f7e",
+              "urls": [
+                "https://github.com/aspect-build/aspect-gazelle/releases/download/prebuilt-v0.0.23/aspect_gazelle-darwin_arm64"
+              ]
+            }
           }
         },
-        "recordedRepoMappingEntries": []
+        "recordedRepoMappingEntries": [
+          [
+            "aspect_gazelle_prebuilt+",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
       }
     },
     "@@pybind11_bazel+//:python_configure.bzl%extension": {

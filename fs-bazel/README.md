@@ -5,7 +5,7 @@ A Bazel 8 project configured with Kotlin, Android development support, and Gazel
 ### Project Structure & Features
 
 - **Bazel 8 Bzlmod Configuration**: `.bazelversion` set to `8.1.0` with standard Bzlmod declarations in `MODULE.bazel`.
-- **Gazelle Target**: `BUILD.bazel` configured with `gazelle(name = "gazelle")`.
+- **Gazelle Target**: Root `BUILD.bazel` configured with `aspect_gazelle` using `aspect_gazelle_prebuilt` for Kotlin BUILD generation.
 - **Kotlin JVM CLI App**:
   - Code: `apps/cli/src/main/kotlin/com/example/cli/Main.kt`
   - Target: `apps/cli/BUILD.bazel` (`kt_jvm_binary`)

@@ -1,4 +1,6 @@
-load("@gazelle//:def.bzl", "gazelle")
+load("@aspect_gazelle_prebuilt//:def.bzl", "aspect_gazelle")
 
-# gazelle:prefix github.com/example/fs-bazel
-gazelle(name = "gazelle")
+aspect_gazelle(
+    name = "gazelle",
+    languages = ["kotlin"],
+)
